@@ -22,14 +22,38 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     viewer.cam.elevation = -30
     viewer.cam.lookat[:] = [0, 0, 0.7]
 
+    step = 0
+    auto_mode = True
+
     while viewer.is_running():
+        step += 1
 
-        cube_pos = data.xpos[cube_id]
-        ee_pos = data.xpos[ee_id]
+        target_down = np.array([
+            0.0,
+            0.599,
+            0.0,
+            -2.07,
+            0.0,
+            2.7,
+            -0.74
+        ])
 
-        # simple fixed joint target (correct test)
-        target = np.array([0, -0.8, 0, -2.2, 0, 2.0, 0.8])
-        data.ctrl[:7] = target
+        alpha = 0.005
+
+        # -------- AUTO PHASE --------
+        if auto_mode:
+            data.ctrl[:7] = data.ctrl[:7] + alpha * (target_down - data.ctrl[:7])
+            data.ctrl[7] = 255  # open gripper
+
+            # stop auto after some time
+            if step > 1000:
+                auto_mode = False
+                print("Now you can move joints manually")
+
+        # -------- MANUAL PHASE --------
+        else:
+            # DO NOTHING → sliders take control
+            pass
 
         mujoco.mj_step(model, data)
         viewer.sync()
