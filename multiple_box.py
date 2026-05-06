@@ -164,23 +164,34 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         cube_ref  = cube_null_ref(cube_pos)
         place_ref = cube_null_ref(place_pos)
 
-        grasp_xyz = cube_pos  + np.array([0.0, 0.0, GRASP_OFFSET])
-        place_xyz = place_pos + np.array([0.0, 0.0, GRASP_OFFSET])
+        grasp_xyz   = cube_pos  + np.array([0.0, 0.0, GRASP_OFFSET])
+        # Release 6 cm above settled position: cube bottom at z=cube_z+0.03,
+        # 6 cm above table top (0.80) — fingers spread freely with no table friction.
+        release_pos = place_pos + np.array([0.0, 0.0, 0.06])
+        place_xyz   = release_pos + np.array([0.0, 0.0, GRASP_OFFSET])
 
         set_grip(0.04, steps=60,  viewer=viewer)
-        move_ee_to(cube_pos  + [0, 0, 0.22],  grip=0.04, steps=300, null_ref=cube_ref,  viewer=viewer)
-        move_ee_to(grasp_xyz,                  grip=0.04, steps=380, null_ref=cube_ref,  viewer=viewer)
-        set_grip(0.00,  steps=320, viewer=viewer)
+        move_ee_to(cube_pos  + [0, 0, 0.25],  grip=0.04,  steps=300, null_ref=cube_ref,  viewer=viewer)
+        move_ee_to(grasp_xyz,                  grip=0.04,  steps=380, null_ref=cube_ref,  viewer=viewer)
+        set_grip(0.015, steps=320, viewer=viewer)
         # Let physics settle with the cube gripped before lifting.
         for _ in range(80):
             mujoco.mj_step(model, data)
             viewer.sync()
-        move_ee_to(cube_pos  + [0, 0, 0.25],  grip=0.00, steps=300, null_ref=cube_ref,  viewer=viewer)
-        move_ee_to(place_pos + [0, 0, 0.20],  grip=0.00, steps=340, null_ref=place_ref, viewer=viewer)
-        move_ee_to(place_xyz,                  grip=0.00, steps=280, null_ref=place_ref, viewer=viewer)
-        # Open gripper while rising — box weight pulls it down, fingers clear even if edge-gripped.
-        move_ee_to(place_pos + [0, 0, 0.14],  grip=0.04, steps=320, null_ref=place_ref, viewer=viewer)
-        move_ee_to(place_pos + [0, 0, 0.22],  grip=0.04, steps=200, null_ref=place_ref, viewer=viewer)
+        move_ee_to(cube_pos  + [0, 0, 0.25],  grip=0.015, steps=300, null_ref=cube_ref,  viewer=viewer)
+        move_ee_to(place_pos + [0, 0, 0.25],  grip=0.015, steps=340, null_ref=place_ref, viewer=viewer)
+        move_ee_to(place_xyz,                  grip=0.015, steps=280, null_ref=place_ref, viewer=viewer)
+        # Let arm dynamics settle before opening — residual joint velocity from the
+        # IK vibrates the hand body and jams the cube against the fingertip pads.
+        for _ in range(150):
+            mujoco.mj_step(model, data)
+            viewer.sync()
+        # Open gripper — cube hangs 6 cm above table, fingers spread freely.
+        set_grip(0.04,  steps=600, viewer=viewer)
+        for _ in range(200):
+            mujoco.mj_step(model, data)
+            viewer.sync()
+        move_ee_to(release_pos + [0, 0, 0.30], grip=0.04, steps=350, null_ref=place_ref, viewer=viewer)
 
         # Between cubes: pre-aim joint1 at the NEXT cube so IK starts already oriented.
         if idx + 1 < len(cube_ids):

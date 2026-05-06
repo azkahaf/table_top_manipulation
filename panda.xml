@@ -187,6 +187,28 @@
               rgba="1 1 1 1"/>
     </body>
 
+    <body name="cube6" pos="0.3 -0.1 0.78">
+        <joint type="free"/>
+        <geom type="box"
+              size="0.03 0.03 0.03"
+              mass="0.1"
+              friction="2 1 0.5"
+              contype="1"
+              conaffinity="1"
+              rgba="1 0.5 0 1"/>
+    </body>
+
+    <body name="cube7" pos="-0.05 0.2 0.78">
+        <joint type="free"/>
+        <geom type="box"
+              size="0.03 0.03 0.03"
+              mass="0.1"
+              friction="2 1 0.5"
+              contype="1"
+              conaffinity="1"
+              rgba="0.5 0 0.8 1"/>
+    </body>
+
     <body name="link0" pos="-0.4 0 0.8" childclass="panda">
       <inertial mass="0.629769" pos="-0.041018 -0.00014 0.049974"
         fullinertia="0.00315 0.00388 0.004285 8.2904e-7 0.00015 8.2299e-6"/>
