@@ -1,8 +1,9 @@
 import mujoco
 import mujoco.viewer
+from pathlib import Path
 
-# Load your scene
-model = mujoco.MjModel.from_xml_path("scene.xml")
+_MODELS = Path(__file__).parent.parent / "models"
+model = mujoco.MjModel.from_xml_path(str(_MODELS / "scene.xml"))
 data = mujoco.MjData(model)
 
 # Launch viewer

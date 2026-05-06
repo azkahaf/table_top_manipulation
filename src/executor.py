@@ -1,12 +1,14 @@
 import numpy as np
 import mujoco
 import mujoco.viewer
+from pathlib import Path
 
 # =============================
 # LOAD SIMULATION (ONCE)
 # =============================
 
-model = mujoco.MjModel.from_xml_path("panda.xml")
+_MODELS = Path(__file__).parent.parent / "models"
+model = mujoco.MjModel.from_xml_path(str(_MODELS / "panda.xml"))
 data = mujoco.MjData(model)
 mujoco.mj_resetData(model, data)
 
